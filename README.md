@@ -4,7 +4,7 @@
       <img alt="Moonwell Logo" src="media/spaceman.png" width="300" />
     </a>
 </p>
-<p style="font-size: 1.5rem; font-weight: bold">Moonwell.js</p>
+<p style="font-size: 1.5rem; font-weight: bold">Moonwell Market Deployer</p>
 
 <img src="https://img.shields.io/npm/v/@moonwell-fi/market-deployer?label=Latest+NPM+Version" />
 <img src="https://img.shields.io/github/package-json/v/moonwell-fi/market-deployer?label=Master+Branch+Version" />
