@@ -14,6 +14,9 @@ type DeploymentConfiguration = {
 
   /** The number of confirmations to use */
   requiredConfirmations: number
+
+  /** The number of markets to deploy. */
+  numMarkets: number
 }
 
 export default DeploymentConfiguration
