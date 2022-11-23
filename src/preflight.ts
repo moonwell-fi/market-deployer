@@ -18,7 +18,12 @@ const MIN_REQUIRED_BALANCE = ethers.utils.parseUnits('1')
  * @param moonscanApiUrl A URL for moonscan.
  * @return Configuration to run the deployment. 
  */
-const runPreflightChecks = async (environment: Environment, rpcUrl: string, moonscanApiUrl: string): Promise<DeploymentConfiguration> => {
+const runPreflightChecks = async (
+  environment: Environment,
+  rpcUrl: string,
+  moonscanApiUrl: string,
+  numMarkets: number
+): Promise<DeploymentConfiguration> => {
   printHeader(`Running Pre Deployment Checks`)
 
   // Print network data
@@ -75,7 +80,8 @@ const runPreflightChecks = async (environment: Environment, rpcUrl: string, moon
     environment,
     deployer,
     moonscanApiUrl,
-    requiredConfirmations: REQUIRED_CONFIRMATIONS
+    requiredConfirmations: REQUIRED_CONFIRMATIONS,
+    numMarkets
   }
 }
 export default runPreflightChecks

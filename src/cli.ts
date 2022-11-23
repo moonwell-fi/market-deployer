@@ -3,7 +3,7 @@
 /** Provides CLI commands for working with the Market deployer */
 
 import * as commander from 'commander'
-import { Environment } from '@moonwell-fi/moonwell.js'
+import { Environment, ProposalData } from '@moonwell-fi/moonwell.js'
 import log, { LogLevelDesc } from 'loglevel'
 import runPreflightChecks from './preflight'
 import getConfiguration, { getInteger, printConfiguration } from './configuration'
@@ -54,14 +54,15 @@ const getMoonscanApiUrl = (environment: Environment) => {
  * @param environment The environment being deployed upon.
  * @param rpcUrl The URL for a JSON RPC that is used to deploy.
  * @param moonscanApiUrl A URL for moonscan.
+ * @param numMarkets The number of markets to deploy
  */
-const main = async (environment: Environment, rpcUrl: string, moonscanApiUrl: string) => {
+const main = async (environment: Environment, rpcUrl: string, moonscanApiUrl: string, numMarkets: number) => {
   // Run preflight checks
-  const deploymentConfiguration = await runPreflightChecks(environment, rpcUrl, moonscanApiUrl)
+  const deploymentConfiguration = await runPreflightChecks(environment, rpcUrl, moonscanApiUrl, numMarkets)
 
   const result = await configureAndDeployMarket(deploymentConfiguration)
 
-  printHeader(`Congratulations! The new market has been deployed and configured`)
+  printHeader(`Congratulations! The new ${numMarkets > 1 ? 'markets are' : 'market is'} deployed and configured`)
   log.info(`⛔️ You should retain the below output for use when submitting a governance proposal ⛔️ `)
   log.info(`========================================================================================`)
   log.info()
@@ -71,23 +72,24 @@ const main = async (environment: Environment, rpcUrl: string, moonscanApiUrl: st
   log.info(`Deployer: ${await deploymentConfiguration.deployer.getAddress()}`)
   log.info()
 
-  printHeader(`Market Configuration`)
-  printConfiguration(result.marketConfiguration)
-  log.info()
+  for (let i = 0; i < numMarkets; i++) {
+    printHeader(`Market ${i > 1 ? i + 1 : ''} Configuration`)
+    printConfiguration(result.marketConfigurations[i])
+    log.info()
 
-  printHeader(`Artifacts of the Deploy Operation`)
-  const mTokenDeployResult = result.mTokenDeployResult
-  const configureMarketResult = result.configureMarketResult
+    printHeader(`Artifacts of Deploy Operation ${i > 1 ? i + 1 : ''}`)
+    const mTokenDeployResult = result.mTokenDeployResults[i]
+    const configureMarketResult = result.configureMarketResults[i]
 
-  log.info(`Market Address: ${mTokenDeployResult.contractAddress} (Deployed in hash ${mTokenDeployResult.transactionHash})`)
-  log.info(`Set Reserve Factor Operation: ${configureMarketResult.setReserveFactorHash} `)
-  log.info(`Set Protocol Seize Share Operation Operation: ${configureMarketResult.setProtocolSeizeShareHash} `)
-  log.info(`Set Pending Admin Operation: ${configureMarketResult.setPendingAdminHash} `)
-  log.info()
+    log.info(`Market Address: ${mTokenDeployResult.contractAddress} (Deployed in hash ${mTokenDeployResult.transactionHash})`)
+    log.info(`Set Reserve Factor Operation: ${configureMarketResult.setReserveFactorHash} `)
+    log.info(`Set Protocol Seize Share Operation Operation: ${configureMarketResult.setProtocolSeizeShareHash} `)
+    log.info(`Set Pending Admin Operation: ${configureMarketResult.setPendingAdminHash} `)
+    log.info()
+  }
 
-  // Merge all gov proposals together
   printHeader(`Governance Proposal to Submit`)
-  log.info(JSON.stringify(result.govProposal, null, 2))
+  log.info(JSON.stringify(result.proposal, null, 2))
   log.info()
 
   printHeader(`Next Steps`)
@@ -109,10 +111,14 @@ const main = async (environment: Environment, rpcUrl: string, moonscanApiUrl: st
  */
  const configureAndDeployMarket = async (deploymentConfiguration: DeploymentConfiguration) => {
   // Get a configuration from the user.
-  const marketConfiguration = await getConfiguration(deploymentConfiguration)
+   const marketConfigurations = []
+   for (let i = 0; i < deploymentConfiguration.numMarkets; i++) {
+     const marketConfiguration = await getConfiguration(deploymentConfiguration)
+     marketConfigurations.push(marketConfiguration)
+   }
 
   // Deploy + Configure
-  return await deployAndWireMarket(marketConfiguration, deploymentConfiguration)
+   return await deployAndWireMarket(marketConfigurations, deploymentConfiguration)
 }
 
 
@@ -125,8 +131,14 @@ for (const environment of Object.values(Environment)) {
       'A custom RPC node to deploy on.',
       getDefaultNodeUrl(environment)
     )
+    .option(
+      '--num-markets <number>',
+      'The number of markets to deploy in one session',
+      '1'
+    )
     .action(function (commandObject) {
-      main(environment, commandObject.nodeUrl, getMoonscanApiUrl(environment))
+      const numMarkets = Number.parseInt(commandObject.numMarkets)
+      main(environment, commandObject.nodeUrl, getMoonscanApiUrl(environment), numMarkets)
     })
 }
 program.parse(process.argv)
