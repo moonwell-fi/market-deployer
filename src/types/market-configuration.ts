@@ -38,5 +38,8 @@ type MarketConfiguration = {
    * For instance, a value of 70 represents 70% and would be represented with an 18 digit mantissa as 700_000_000_000_000_000.
    */
   collateralFactor: number
+
+  /** The borrow cap of the market. */
+  borrowCap: number
 }
 export default MarketConfiguration
