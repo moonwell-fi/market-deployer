@@ -114,7 +114,7 @@ const readConfiguration = async (deploymentConfiguration: DeploymentConfiguratio
 
   // We default to 3 for now. Eventually we may want to allow this to be configurable.
   const protocolSeizeShare = 3
-  log.info(`        ✅ Setting reserve factor to ${protocolSeizeShare}%`)
+  log.info(`        ✅ Setting protocol seize share to ${protocolSeizeShare}%`)
 
   const collateralFactorPrompt = `
   What is the collateral factor for the new market? Enter an integer representing a percentage. For instance, enter '0' for 0%.
