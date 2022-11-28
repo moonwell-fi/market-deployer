@@ -39,6 +39,7 @@ type MarketConfiguration = {
    */
   collateralFactor: number
 
+  /** The borrow cap of the market. */
   borrowCap: number
 }
 export default MarketConfiguration
