@@ -1,9 +1,10 @@
 /** Utilities to create a governance proposal. */
 
-import { BigNumber, Contract, ethers } from "ethers"
+import { BigNumber } from "ethers"
 import MarketConfiguration from "./types/market-configuration"
 import DeploymentConfiguration from "./types/deployment-configuration"
 import { Contracts, ProposalData, getContract } from "@moonwell-fi/moonwell.js"
+import { UNLIMITED_BORROW_CAP } from './constants'
 
 /**
  * Generate a Governance proposal that will add the given market.
@@ -24,7 +25,38 @@ const generateGovProposal = async (
   proposals.push(await generateAcceptAdminProposal(marketAddress))
   proposals.push(await generateSetCollateralFactorProposal(deploymentConfiguration, marketAddress, marketConfiguration))
   proposals.push(await generateSetBorrowSpeedProposal(deploymentConfiguration, marketAddress))
+
+  // Only add a borrow cap if the user asked for one.
+  if (marketConfiguration.borrowCap !== UNLIMITED_BORROW_CAP) {
+    proposals.push(await generateSetBorrowCapProposal(deploymentConfiguration, marketAddress, marketConfiguration))
+  }
+
   return mergeProposals(proposals)
+}
+
+/**
+ * Generates a Governance proposal to support a market in the Comptroller.
+ * 
+ * @param deploymentConfiguration The configuration for this deployment.
+ * @param marketAddress The address of the market.
+ * @returns A GovernanceProp JSON object.
+ */
+ const generateSetBorrowCapProposal = async (
+  deploymentConfiguration: DeploymentConfiguration, 
+  marketAddress: string,
+  marketConfiguration: MarketConfiguration,
+): Promise<ProposalData> => {
+  const borrowCap = BigNumber.from(marketConfiguration.borrowCap).mul(BigNumber.from("10").pow(marketConfiguration.tokenDecimals));
+
+  const comptroller = Contracts[deploymentConfiguration.environment].COMPTROLLER.contract
+  const tx = await comptroller.populateTransaction['_setMarketBorrowCaps']([marketAddress], [borrowCap])
+
+  return {
+    targets: [ comptroller.address ],
+    values: [ 0 ],
+    signatures: [ comptroller.interface.getFunction('_setMarketBorrowCaps').format()],
+    callDatas: [ `0x${tx.data!.slice(10)}`]
+  }
 }
 
 /**
