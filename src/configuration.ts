@@ -8,6 +8,7 @@ import { stdin as input, stdout as output } from 'node:process';
 import MarketConfiguration from './types/market-configuration';
 import DeploymentConfiguration from './types/deployment-configuration';
 import { getContractFactory } from '@moonwell-fi/moonwell.js'
+import { UNLIMITED_BORROW_CAP } from './constants'
 
 /**
  * Get configuration for deploying a market.
@@ -113,6 +114,7 @@ const readConfiguration = async (deploymentConfiguration: DeploymentConfiguratio
 
   // We default to 3 for now. Eventually we may want to allow this to be configurable.
   const protocolSeizeShare = 3
+  log.info(`        ✅ Setting reserve factor to ${protocolSeizeShare}%`)
 
   const collateralFactorPrompt = `
   What is the collateral factor for the new market? Enter an integer representing a percentage. For instance, enter '0' for 0%.
@@ -122,6 +124,16 @@ const readConfiguration = async (deploymentConfiguration: DeploymentConfiguratio
   const collateralFactor = await getInteger(collateralFactorPrompt)
   log.info(`        ✅ Setting Collateral Factor to ${collateralFactor}%`)
   log.info()
+
+  const borrowCapPrompt = `
+  What is the borrow cap for the new market? Enter a whole number representing the number of the underlying token that can be borrowed. For instance, if the underlying token is BTC, enter '600' to set the borrow cap to 600 BTC.
+  
+  Enter ${UNLIMITED_BORROW_CAP} for no cap.
+  > `
+  const borrowCap = await getInteger(borrowCapPrompt)
+  log.info(`        ✅ Setting Borrow Cap to ${borrowCap === UNLIMITED_BORROW_CAP ? 'Unlimited' : borrowCap} ${tokenSymbol}`)
+  log.info()
+
 
   // Print the config and give it to the user.
   const config = {
@@ -133,7 +145,8 @@ const readConfiguration = async (deploymentConfiguration: DeploymentConfiguratio
     mTokenName,
     reserveFactor,
     protocolSeizeShare,
-    collateralFactor
+    collateralFactor,
+    borrowCap
   }
   printHeader('Market Configuration')
   printConfiguration(config)
@@ -164,6 +177,7 @@ export const printConfiguration = (config: MarketConfiguration) => {
   log.info(`        Reserve Factor: ${config.reserveFactor}%`)
   log.info(`        Protocol Seize Share: ${config.protocolSeizeShare}%`)
   log.info(`        Collateral Factor: ${config.collateralFactor}%`)
+  log.info(`        Borrow Cap: ${config.borrowCap === UNLIMITED_BORROW_CAP ? 'Unlimited' : config.borrowCap} ${config.tokenSymbol}`)
   log.info()
 }
 

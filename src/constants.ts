@@ -8,3 +8,6 @@ export const MOONSCAN_API_KEY_ENV_VAR_NAME = 'MOONSCAN_API_KEY'
 
 /** Amount of confirmations required. */
 export const REQUIRED_CONFIRMATIONS = 3
+
+/** Special constant representing no borrow cap */
+export const UNLIMITED_BORROW_CAP = 0

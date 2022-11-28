@@ -46,6 +46,8 @@ const mergeProposals = (govProposals: Array<ProposalData>): ProposalData => {
 
 }
 
+export * from './constants'
+
 /**
  * Deploy a market and perform transactions to wire it.
  * 
