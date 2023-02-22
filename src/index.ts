@@ -2,13 +2,11 @@
 
 import log, { LogLevelDesc } from 'loglevel'
 import deployMTokenContract from './deploy'
-import { configureMarket } from './configure-market'
 import generateGovProposal from './gov-proposal'
 import DeploymentConfiguration from './types/deployment-configuration'
 import MarketConfiguration from './types/market-configuration'
 import DeployResult from './types/deploy-result'
-import { Market, ProposalData } from '@moonwell-fi/moonwell.js'
-import ConfigureMarketResult from './types/configure-market-result'
+import { ProposalData } from '@moonwell-fi/moonwell.js'
 
 const logLevel: LogLevelDesc = (process.env['MOONWELL_MARKET_DEPLOYER_LOGLEVEL'] as LogLevelDesc) ?? 'info'
 log.setLevel(logLevel)
@@ -16,7 +14,6 @@ log.setLevel(logLevel)
 type InternalDeployResult = {
   marketConfiguration: MarketConfiguration
   mTokenDeployResult: DeployResult,
-  configureMarketResult: ConfigureMarketResult,
   govProposal: ProposalData
 }
 
@@ -27,7 +24,6 @@ type MarketsDeployResult = {
   // Arrays of results for each market
   marketConfigurations: Array<MarketConfiguration>
   mTokenDeployResults: Array<DeployResult>
-  configureMarketResults: Array<ConfigureMarketResult>
 }
 
 // Return a single array of all proposal data.
@@ -65,13 +61,6 @@ export const deployAndWireMarket = async (
     // Deploy the token contract
     const mTokenDeployResult = await deployMTokenContract(marketConfiguration, deploymentConfiguration)
 
-    // Configure the market
-    const configureMarketResult = await configureMarket(
-      mTokenDeployResult.contractAddress,
-      marketConfiguration,
-      deploymentConfiguration
-    )
-
     const govProposal: ProposalData = await generateGovProposal(
       mTokenDeployResult.contractAddress,
       marketConfiguration,
@@ -82,7 +71,6 @@ export const deployAndWireMarket = async (
       {
         marketConfiguration,
         mTokenDeployResult,
-        configureMarketResult,
         govProposal
       }
     )
@@ -92,7 +80,6 @@ export const deployAndWireMarket = async (
     proposal: mergeProposals(results.map((result) => { return result.govProposal })),
     marketConfigurations: results.map((results) => { return results.marketConfiguration }),
     mTokenDeployResults: results.map((results) => { return results.mTokenDeployResult }),
-    configureMarketResults: results.map((results) => { return results.configureMarketResult }),
   }
 }
 
