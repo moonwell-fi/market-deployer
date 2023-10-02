@@ -1,6 +1,6 @@
 {
   "name": "@moonwell-fi/market-deployer",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "description": "Tools to deploy Moonwell Markets",
   "main": "dist/index.js",
   "bin": {

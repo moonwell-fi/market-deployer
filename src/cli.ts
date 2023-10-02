@@ -31,7 +31,7 @@ const getDefaultNodeUrl = (environment: Environment) => {
     case Environment.MOONBASE:
       return `https://rpc.api.moonbase.moonbeam.network`
     case Environment.MOONBEAM:
-      return `https://rpc.moonbeam.network`
+      return `https://rpc.api.moonbeam.network`
     case Environment.MOONRIVER:
       return `https://rpc.moonriver.moonbeam.network`
   }
