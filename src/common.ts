@@ -2,7 +2,7 @@
 
 import log from 'loglevel'
 import { REQUIRED_CONFIRMATIONS } from './constants'
-import { Contracts, Environment } from '@moonwell-fi/moonwell.js'
+import { Environment } from '@moonwell-fi/moonwell.js'
 
 /**
  * Pretty print a header.
@@ -23,7 +23,7 @@ export const printHeader = (message: string) => {
  * @returns The comptroller's address.
  */
 export const getComptrollerAddress = (environment: Environment): string => {
-  return Contracts[environment].COMPTROLLER.address
+  return Environment[environment].COMPTROLLER.address
 }
 
 /**
@@ -33,7 +33,7 @@ export const getComptrollerAddress = (environment: Environment): string => {
  * @returns The interest rate model's address.
  */
 export const getInterestRateModelAddress = (environment: Environment): string => {
-  return Contracts[environment].INTEREST_RATE_MODEL.address
+  return Environment[environment].INTEREST_RATE_MODEL.address
 }
 
 
@@ -44,7 +44,7 @@ export const getInterestRateModelAddress = (environment: Environment): string =>
  * @returns The mERC20 implementation's address.
  */
 export const getMERC20ImplementationAddress = (environment: Environment): string => {
-  return Contracts[environment].MERC_20_IMPL.address
+  return Environment[environment].MERC_20_IMPL.address
 }
 
 /**
@@ -54,7 +54,7 @@ export const getMERC20ImplementationAddress = (environment: Environment): string
  * @returns The Governance Timelock's address.
  */
 export const getTimelockAddress = (environment: Environment): string => {
-  return Contracts[environment].TIMELOCK.address
+  return Environment[environment].TIMELOCK.address
 }
 
 /**
@@ -64,7 +64,7 @@ export const getTimelockAddress = (environment: Environment): string => {
  * @returns The Chainlink Proxy's address.
  */
 export const getChainlinkProxyAddress = (environment: Environment): string => {
-  return Contracts[environment].ORACLE.address
+  return Environment[environment].ORACLE.address
 }
 
 /**
