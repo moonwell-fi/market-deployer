@@ -37,7 +37,7 @@ export MOONSCAN_API_KEY=... # Your API Key
 
 Once installed, simply pass the network you want to deploy on to the CLI tool and follow the prompts.
 
-- [Moonbeam](https://moonbeam.moonscan.io/): `market-deployer run moonbeam`
+- [Moonbeam](https://moonbeam.moonscan.io/): `market-deployer moonbeam`
 - [Moonriver](https://moonriver.moonscan.io/): `market-deployer moonriver`
 - [Moonbase Alpha Testnet](https://moonbase.moonscan.io/): `market-deployer moonbase`
 
