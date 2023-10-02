@@ -3,7 +3,7 @@
 import { BigNumber } from "ethers"
 import MarketConfiguration from "./types/market-configuration"
 import DeploymentConfiguration from "./types/deployment-configuration"
-import { Environment, ProposalData, getContract } from "@moonwell-fi/moonwell.js"
+import { Contracts, ProposalData, getContract } from "@moonwell-fi/moonwell.js"
 import { UNLIMITED_BORROW_CAP } from './constants'
 
 /**
@@ -48,7 +48,7 @@ const generateGovProposal = async (
 ): Promise<ProposalData> => {
   const borrowCap = BigNumber.from(marketConfiguration.borrowCap).mul(BigNumber.from("10").pow(marketConfiguration.tokenDecimals));
 
-  const comptroller = Environment[deploymentConfiguration.environment].COMPTROLLER.contract
+  const comptroller = Contracts[deploymentConfiguration.environment].COMPTROLLER.contract
   const tx = await comptroller.populateTransaction['_setMarketBorrowCaps']([marketAddress], [borrowCap])
 
   return {
@@ -67,7 +67,7 @@ const generateGovProposal = async (
  * @returns A GovernanceProp JSON object.
  */
 const generateSupportMarketProposal = async (deploymentConfiguration: DeploymentConfiguration, marketAddress: string): Promise<ProposalData> => {
-  const comptroller = Environment[deploymentConfiguration.environment].COMPTROLLER.contract
+  const comptroller = Contracts[deploymentConfiguration.environment].COMPTROLLER.contract
   const tx = await comptroller.populateTransaction['_supportMarket'](marketAddress)
 
   return {
@@ -93,7 +93,7 @@ const generateSetCollateralFactorProposal = async  (
 ): Promise<ProposalData>  => {
   const collateralFactor = BigNumber.from(marketConfiguration.collateralFactor).mul(BigNumber.from("10").pow("16"));
 
-  const comptroller = Environment[deploymentConfiguration.environment].COMPTROLLER.contract
+  const comptroller = Contracts[deploymentConfiguration.environment].COMPTROLLER.contract
   const tx = await comptroller.populateTransaction['_setCollateralFactor'](marketAddress, collateralFactor)
 
   return {
@@ -115,7 +115,7 @@ const generateSetCollateralFactorProposal = async  (
   deploymentConfiguration: DeploymentConfiguration,
   marketAddress: string,
 ): Promise<ProposalData>  => {
-  const comptroller = Environment[deploymentConfiguration.environment].COMPTROLLER.contract
+  const comptroller = Contracts[deploymentConfiguration.environment].COMPTROLLER.contract
  
   const txGov = await comptroller.populateTransaction['_setRewardSpeed'](0, marketAddress, 0, 1)
   const txNative = await comptroller.populateTransaction['_setRewardSpeed'](1, marketAddress, 0, 1)
@@ -163,7 +163,7 @@ const generateConfigureChainlinkFeedProposal = async (
   deploymentConfiguration: DeploymentConfiguration,
   marketConfiguration: MarketConfiguration,
 ): Promise<ProposalData>  => {
-  const oracle = Environment[deploymentConfiguration.environment].ORACLE.contract
+  const oracle = Contracts[deploymentConfiguration.environment].ORACLE.contract
   const tx = await oracle.populateTransaction['setFeed'](marketConfiguration.tokenSymbol, marketConfiguration.chainlinkFeedAddress)
 
   return {
