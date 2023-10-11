@@ -16,7 +16,8 @@ const MIN_REQUIRED_BALANCE = ethers.utils.parseUnits('1')
  * @param environment The environment this script is running in.
  * @param rpcUrl The URL for a JSON RPC that is used to deploy.
  * @param moonscanApiUrl A URL for moonscan.
- * @return Configuration to run the deployment. 
+ * @param numMarkets The number of markets to configure
+ * @return Configuration to run the deployment.
  */
 const runPreflightChecks = async (
   environment: Environment,

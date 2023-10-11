@@ -6,9 +6,8 @@ import * as commander from 'commander'
 import { Environment, ProposalData } from '@moonwell-fi/moonwell.js'
 import log, { LogLevelDesc } from 'loglevel'
 import runPreflightChecks from './preflight'
-import getConfiguration, { getInteger, printConfiguration } from './configuration'
+import getConfiguration, { printConfiguration } from './configuration'
 import { printHeader } from './common'
-import { mergeProposals } from './gov-proposal'
 import DeploymentConfiguration from './types/deployment-configuration'
 import { deployAndWireMarket } from './index'
 import { ethers } from 'ethers'
@@ -79,12 +78,8 @@ const main = async (environment: Environment, rpcUrl: string, moonscanApiUrl: st
 
     printHeader(`Artifacts of Deploy Operation ${i > 1 ? i + 1 : ''}`)
     const mTokenDeployResult = result.mTokenDeployResults[i]
-    const configureMarketResult = result.configureMarketResults[i]
 
     log.info(`Market Address: ${mTokenDeployResult.contractAddress} (Deployed in hash ${mTokenDeployResult.transactionHash})`)
-    log.info(`Set Reserve Factor Operation: ${configureMarketResult.setReserveFactorHash} `)
-    log.info(`Set Protocol Seize Share Operation Operation: ${configureMarketResult.setProtocolSeizeShareHash} `)
-    log.info(`Set Pending Admin Operation: ${configureMarketResult.setPendingAdminHash} `)
     log.info()
   }
 

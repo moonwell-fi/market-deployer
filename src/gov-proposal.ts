@@ -1,6 +1,6 @@
 /** Utilities to create a governance proposal. */
 
-import { BigNumber } from "ethers"
+import { BigNumber, Contract } from "ethers"
 import MarketConfiguration from "./types/market-configuration"
 import DeploymentConfiguration from "./types/deployment-configuration"
 import { Contracts, ProposalData, getContract } from "@moonwell-fi/moonwell.js"
@@ -22,9 +22,10 @@ const generateGovProposal = async (
   const proposals: Array<ProposalData> = []
   proposals.push(await generateConfigureChainlinkFeedProposal(deploymentConfiguration, marketConfiguration))
   proposals.push(await generateSupportMarketProposal(deploymentConfiguration, marketAddress))
-  proposals.push(await generateAcceptAdminProposal(marketAddress))
-  proposals.push(await generateSetCollateralFactorProposal(deploymentConfiguration, marketAddress, marketConfiguration))
-  proposals.push(await generateSetBorrowSpeedProposal(deploymentConfiguration, marketAddress))
+  proposals.push(await generateSetReserveFactorProposal(deploymentConfiguration, marketConfiguration, marketAddress))
+  proposals.push(await generateSetProtocolSeizeShareProposal(deploymentConfiguration, marketConfiguration, marketAddress))
+  proposals.push(await generateSetCollateralFactorProposal(deploymentConfiguration, marketConfiguration, marketAddress))
+  proposals.push(await generateSetRewardEmissionsProposal(deploymentConfiguration, marketAddress))
 
   // Only add a borrow cap if the user asked for one.
   if (marketConfiguration.borrowCap !== UNLIMITED_BORROW_CAP) {
@@ -39,6 +40,7 @@ const generateGovProposal = async (
  * 
  * @param deploymentConfiguration The configuration for this deployment.
  * @param marketAddress The address of the market.
+ * @param marketConfiguration The market configuration object
  * @returns A GovernanceProp JSON object.
  */
  const generateSetBorrowCapProposal = async (
@@ -82,14 +84,14 @@ const generateSupportMarketProposal = async (deploymentConfiguration: Deployment
  * Generates a Governance proposal to set the given collateral factor on the market in the Comptroller.
  * 
  * @param deploymentConfiguration The configuration for this deployment.
- * @param marketAddress The address of the market.
  * @param marketConfiguration Configuration for the market.
+ * @param marketAddress The address of the market.
  * @returns A GovernanceProp JSON object.
  */
 const generateSetCollateralFactorProposal = async  (
   deploymentConfiguration: DeploymentConfiguration,
-  marketAddress: string,
   marketConfiguration: MarketConfiguration,
+  marketAddress: string,
 ): Promise<ProposalData>  => {
   const collateralFactor = BigNumber.from(marketConfiguration.collateralFactor).mul(BigNumber.from("10").pow("16"));
 
@@ -105,13 +107,14 @@ const generateSetCollateralFactorProposal = async  (
 }
 
 /**
- * Generates a Governance proposal to initialize borrow speedson an asset.
+ * Generates a Governance proposal to initialize reward emissions for a given market to SUPPLY:0, BORROW:1 for
+ * all reward tokens.
  * 
  * @param deploymentConfiguration The configuration for this deployment.
  * @param marketAddress The address of the market.
  * @returns A GovernanceProp JSON object.
  */
- const generateSetBorrowSpeedProposal = async  (
+ const generateSetRewardEmissionsProposal = async  (
   deploymentConfiguration: DeploymentConfiguration,
   marketAddress: string,
 ): Promise<ProposalData>  => {
@@ -148,6 +151,65 @@ const generateAcceptAdminProposal = async (marketAddress: string): Promise<Propo
     targets: [ token.address ],
     values: [ 0 ],
     signatures: [ token.interface.getFunction('_acceptAdmin').format()],
+    callDatas: [ `0x${tx.data!.slice(10)}`]
+  }
+}
+
+/**
+ * Generates a Governance proposal to set reserve factor for a deployed market
+ *
+ * @param deploymentConfiguration The deployment configuration object
+ * @param marketConfiguration The market configuration object
+ * @param marketAddress The address of the deployed market
+ * @returns A GovernanceProp JSON object.
+ */
+const generateSetReserveFactorProposal = async (
+    deploymentConfiguration: DeploymentConfiguration,
+    marketConfiguration: MarketConfiguration,
+    marketAddress: string
+): Promise<ProposalData>  => {
+  const token = getContract('MToken', marketAddress)
+
+  const percentMantissa = BigNumber.from("10").pow("16")
+
+  const reserveFactor = BigNumber.from(marketConfiguration.reserveFactor).mul(percentMantissa);
+
+  const tx = await token.populateTransaction['_setReserveFactor'](reserveFactor)
+
+  return {
+    targets: [ token.address ],
+    values: [ 0 ],
+    signatures: [ token.interface.getFunction('_setReserveFactor').format() ],
+    callDatas: [ `0x${tx.data!.slice(10)}`]
+  }
+}
+
+
+/**
+ * Generates a Governance proposal to set protocol seize share for a deployed market
+ *
+ * @param deploymentConfiguration The deployment configuration object
+ * @param marketConfiguration The market configuration object
+ * @param marketAddress The address of the deployed market
+ * @returns A GovernanceProp JSON object.
+ */
+const generateSetProtocolSeizeShareProposal = async (
+    deploymentConfiguration: DeploymentConfiguration,
+    marketConfiguration: MarketConfiguration,
+    marketAddress: string
+): Promise<ProposalData>  => {
+  const token = getContract('MToken', marketAddress)
+
+  const percentMantissa = BigNumber.from("10").pow("16")
+
+  const protocolSeizeShare = BigNumber.from(marketConfiguration.protocolSeizeShare).mul(percentMantissa);
+
+  const tx = await token.populateTransaction['_setProtocolSeizeShare'](protocolSeizeShare)
+
+  return {
+    targets: [ token.address ],
+    values: [ 0 ],
+    signatures: [ token.interface.getFunction('_setProtocolSeizeShare').format() ],
     callDatas: [ `0x${tx.data!.slice(10)}`]
   }
 }

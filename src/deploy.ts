@@ -3,7 +3,7 @@
 import log from 'loglevel'
 import MarketConfiguration from './types/market-configuration'
 import { ethers, BigNumber } from 'ethers'
-import { getComptrollerAddress, getInterestRateModelAddress, getMERC20ImplementationAddress, printHeader, waitForConfirmations } from './common'
+import { getComptrollerAddress, getTimelockAddress, getInterestRateModelAddress, getMERC20ImplementationAddress, printHeader, waitForConfirmations } from './common'
 import DeploymentConfiguration from './types/deployment-configuration'
 import DeployResult from './types/deploy-result'
 import { MOONSCAN_API_KEY_ENV_VAR_NAME } from './constants'
@@ -38,8 +38,9 @@ const deployMTokenContract = async (
   const initialExchangeRateMantissa = BigNumber.from("10").pow(marketConfiguration.tokenDecimals + 8).mul(2)
   log.debug(`Initial exchange rate mantissa: ${initialExchangeRateMantissa.toString()}`)
 
-  const initialAdmin = await deploymentConfiguration.deployer.getAddress()
-  log.debug(`Initial admin set to deployer: ${initialAdmin}`)
+  // Set the admin to the timelock address
+  const admin = getTimelockAddress(deploymentConfiguration.environment)
+  log.debug(`Initial admin set to deployer: ${admin}`)
   log.debug()
 
   // Load contract source
@@ -54,7 +55,7 @@ const deployMTokenContract = async (
     marketConfiguration.mTokenName,
     marketConfiguration.mTokenSymbol,
     BigNumber.from("8"),
-    initialAdmin,
+    admin,
     mERC20ImplementationAddress,
     "0x00",
   );
@@ -78,7 +79,7 @@ const deployMTokenContract = async (
         marketConfiguration.mTokenName,
         marketConfiguration.mTokenSymbol,
         BigNumber.from("8"),
-        initialAdmin,
+        admin,
         mERC20ImplementationAddress,
         "0x00"
       ]
